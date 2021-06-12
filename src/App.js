@@ -1,5 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
+import Amplify, {API, graphqlOperation} from 'aws-amplify'
+import {createTodo} from './graphql/mutations'
+import {getTodo} from './graphql/queries'
+import awsExports from './aws-exports'
+Amplify.configure(awsExports)
+
 
 function App() {
   return (
