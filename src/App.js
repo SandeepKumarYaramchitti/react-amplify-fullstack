@@ -7,14 +7,20 @@ import {getTodo, listTodos} from './graphql/queries'
 import awsExports from './aws-exports'
 Amplify.configure(awsExports)
 
+const initialState = { name: '', description: '' }
 
 function App() {
 
   const [todos, settodos] = useState([])
+  const [formState, setFormState] = useState(initialState)
 
   useEffect(() => {
     fetchTodos();
   }, [])
+
+  function setInput(key, value) {
+    setFormState({ ...formState, [key]: value })
+  }
 
   async function fetchTodos() {
       try {
@@ -32,14 +38,24 @@ function App() {
     <div style={styles.container}>
       <h2>My Todos</h2>
       <input style={styles.input}
-        value="" 
+        onChange={event => setInput('name', event.target.value)}
+        value={formState.name}
         placeholder="Name"
       ></input>
       <input style={styles.input}
-        value="" 
+        onChange={event => setInput('description', event.target.value)}
+        value={formState.description} 
         placeholder="Description"
       ></input>
       <button style={styles.button}>Create Todo!</button>
+      {
+        todos.map((todo, index) => (
+          <div key={todo.id ? todo.id : index} style={styles.todo}>
+            <p style={styles.todoName}>{todo.name}</p>
+            <p style={styles.todoDescription}>{todo.description}</p>
+          </div>
+        ))
+      }
     </div>
   );
 }
@@ -47,7 +63,9 @@ function App() {
 const styles = {
   container: {width: 400, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20},
   input: { border: 'none', backgroundColor: '#ddd', marginBottom: 10, padding: 8, fontSize: 18 },
-  button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' }
+  button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' },
+  todoName: { fontSize: 20, fontWeight: 'bold' },
+  todoDescription: { marginBottom: 0 },
 }
 
 export default App;
