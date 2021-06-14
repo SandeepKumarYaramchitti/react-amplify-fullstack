@@ -5,6 +5,7 @@ import Amplify, {API, graphqlOperation} from 'aws-amplify'
 import {createTodo} from './graphql/mutations'
 import {getTodo, listTodos} from './graphql/queries'
 import awsExports from './aws-exports'
+import {withAuthenticator} from '@aws-amplify/ui-react'
 Amplify.configure(awsExports)
 
 const initialState = { name: '', description: '' }
@@ -68,4 +69,10 @@ const styles = {
   todoDescription: { marginBottom: 0 },
 }
 
-export default App;
+const MyTheme = {
+  googleSignInButton: { backgroundColor: "red", borderColor: "red" },
+  button: { backgroundColor: "green", borderColor: "red" },
+  signInButtonIcon: { display: "none" }
+};
+// @ts-ignore
+export default withAuthenticator(App, false, [], null, MyTheme);
