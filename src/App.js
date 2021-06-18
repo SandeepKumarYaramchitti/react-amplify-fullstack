@@ -1,22 +1,20 @@
-import React, {useState, useEffect} from 'react';
-import logo from './logo.svg';
-import './App.css';
-import Amplify, {API, graphqlOperation} from 'aws-amplify'
-import {createTodo} from './graphql/mutations'
-import {getTodo, listTodos} from './graphql/queries'
-import awsExports from './aws-exports'
-import {withAuthenticator} from '@aws-amplify/ui-react'
-Amplify.configure(awsExports)
+/* src/App.js */
+import React, { useEffect, useState } from 'react'
+import Amplify, { API, graphqlOperation } from 'aws-amplify'
+import { createTodo } from './graphql/mutations'
+import { listTodos } from './graphql/queries'
+
+import awsExports from "./aws-exports";
+Amplify.configure(awsExports);
 
 const initialState = { name: '', description: '' }
 
-function App() {
-
-  const [todos, settodos] = useState([])
+const App = () => {
   const [formState, setFormState] = useState(initialState)
+  const [todos, setTodos] = useState([])
 
   useEffect(() => {
-    fetchTodos();
+    fetchTodos()
   }, [])
 
   function setInput(key, value) {
@@ -24,31 +22,41 @@ function App() {
   }
 
   async function fetchTodos() {
-      try {
-          const toDoData = await API.graphql(graphqlOperation(listTodos));
-          // @ts-ignore
-          const todos = toDoData.data.listTodos.items;
-          settodos(todos);
+    try {
+      const todoData = await API.graphql(graphqlOperation(listTodos))
+      const todos = todoData.data.listTodos.items
+      setTodos(todos)
+    } catch (err) { console.log('error fetching todos') }
+  }
 
-      }catch (err) {
-
-      }
+  async function addTodo() {
+    try {
+      if (!formState.name || !formState.description) return
+      const todo = { ...formState }
+      setTodos([...todos, todo])
+      setFormState(initialState)
+      await API.graphql(graphqlOperation(createTodo, {input: todo}))
+    } catch (err) {
+      console.log('error creating todo:', err)
+    }
   }
 
   return (
     <div style={styles.container}>
-      <h2>My Todos</h2>
-      <input style={styles.input}
+      <h2>Amplify Todos</h2>
+      <input
         onChange={event => setInput('name', event.target.value)}
+        style={styles.input}
         value={formState.name}
         placeholder="Name"
-      ></input>
-      <input style={styles.input}
+      />
+      <input
         onChange={event => setInput('description', event.target.value)}
-        value={formState.description} 
+        style={styles.input}
+        value={formState.description}
         placeholder="Description"
-      ></input>
-      <button style={styles.button}>Create Todo!</button>
+      />
+      <button style={styles.button} onClick={addTodo}>Create Todo</button>
       {
         todos.map((todo, index) => (
           <div key={todo.id ? todo.id : index} style={styles.todo}>
@@ -58,21 +66,16 @@ function App() {
         ))
       }
     </div>
-  );
+  )
 }
 
 const styles = {
-  container: {width: 400, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20},
+  container: { width: 400, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20 },
+  todo: {  marginBottom: 15 },
   input: { border: 'none', backgroundColor: '#ddd', marginBottom: 10, padding: 8, fontSize: 18 },
-  button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' },
   todoName: { fontSize: 20, fontWeight: 'bold' },
   todoDescription: { marginBottom: 0 },
+  button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' }
 }
 
-const MyTheme = {
-  googleSignInButton: { backgroundColor: "red", borderColor: "red" },
-  button: { backgroundColor: "green", borderColor: "red" },
-  signInButtonIcon: { display: "none" }
-};
-// @ts-ignore
-export default withAuthenticator(App, false, [], null, MyTheme);
+export default App
